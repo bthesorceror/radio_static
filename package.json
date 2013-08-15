@@ -1,0 +1,22 @@
+{
+  "name": "radio_static",
+  "version": "0.0.0",
+  "description": "When one stream need to talk to many",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/bthesorceror/radio_station"
+  },
+  "keywords": [
+    "streams",
+    "multicast"
+  ],
+  "author": "Brandon Farmer",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/bthesorceror/radio_station/issues"
+  }
+}
