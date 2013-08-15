@@ -10,6 +10,9 @@ RadioStatic.prototype.write = function(data) {
 
 RadioStatic.prototype.end = function(data) {
   this._broadcast(data, true);
+  process.nextTick(function() {
+    this.emit('end', data);
+  }.bind(this));
 }
 
 RadioStatic.prototype.assimilate = function(stream) {
@@ -21,7 +24,6 @@ RadioStatic.prototype.assimilate = function(stream) {
   }.bind(this));
 
   stream.on('end', function(data) {
-    this.emit('end', data);
     if (data)
       this._broadcast(data, false, stream);
     this._removeStream(stream);
