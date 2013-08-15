@@ -1,5 +1,6 @@
-function RadioStatic() { 
-  this._streams = [];
+function RadioStatic() {
+  this._streams = {};
+  this.key = 0;
 }
 
 (require('util')).inherits(RadioStatic, (require('events')).EventEmitter);
@@ -15,37 +16,56 @@ RadioStatic.prototype.end = function(data) {
   }.bind(this));
 }
 
+RadioStatic.prototype.nextKey = function() {
+  return (++this.key);
+}
+
 RadioStatic.prototype.assimilate = function(stream) {
-  this._addStream(stream);
 
-  stream.on('data', function(data) {
-    this.emit('data', data);
-    this._broadcast(data, false, stream);
-  }.bind(this));
+  var key = this.nextKey();
 
-  stream.on('end', function(data) {
+  var data = function(data) {
+    this._broadcast(data, false, key);
+  }.bind(this);
+
+  stream.on('data', data);
+
+  var end = function(data) {
     if (data)
-      this._broadcast(data, false, stream);
-    this._removeStream(stream);
-  }.bind(this));
+      this._broadcast(data, false, key);
+    this._removeStream(key);
+  }.bind(this)
+
+  stream.on('end', end);
+
+  this._addStream(key, stream, data, end);
+
+  return key;
 }
 
 RadioStatic.prototype._broadcast = function(data, end, from) {
-  this._streams.forEach(function(stream) {
-    if (stream !== from) {
+  if (from)
+    this.emit('data', data);
+
+  Object.keys(this._streams).forEach(function(key) {
+    var stream = this._streams[key][2];
+    if (key != from) {
       end ? stream.end(data) : stream.write(data);
     }
-  });
+  }.bind(this));
 }
 
-RadioStatic.prototype._addStream = function(stream) {
-  this._streams.push(stream);
+RadioStatic.prototype._addStream = function(key, stream, dataListener, endListener) {
+  this._streams[key] = [dataListener, endListener, stream];
 }
 
-RadioStatic.prototype._removeStream = function(stream) {
-  var index = this._streams.indexOf(stream);
-  if (index > 0) {
-    this._streams.splice(index, 1);
+RadioStatic.prototype._removeStream = function(key) {
+  if (this._streams[key]) {
+    var stream = this._streams[key][2];
+    stream.removeListener('data', this._streams[key][0]);
+    stream.removeListener('end', this._streams[key][1]);
+    delete this._streams[key];
+    console.log(this._streams.length);
     this.emit('streamRemoved', stream);
   }
 }
