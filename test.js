@@ -32,15 +32,15 @@ NopStream.prototype.end = function () {
     radio.assimilate(stream3);
 
     stream1.write = function(data) {
-      test.equal(data, 'something');
+      test.equal(data, 'something', 'stream 1 received data');
     };
 
     stream3.write = function(data) {
-      test.equal(data, 'something');
+      test.equal(data, 'something', 'stream 3 received data');
     };
 
     stream2.write = function(data) {
-      test.equal(data, 'something');
+      test.equal(data, 'something', 'stream 2 received data');
     };
 
     stream2.emit('data', 'something');
@@ -59,15 +59,15 @@ NopStream.prototype.end = function () {
     radio.assimilate(stream3);
 
     stream1.write = function(data) {
-      test.equal(data, 'something');
+      test.equal(data, 'something', 'stream 1 received data');
     };
 
     stream2.write = function(data) {
-      test.equal(data, 'something');
+      test.equal(data, 'something', 'stream 2 received data');
     };
 
     stream3.write = function(data) {
-      test.equal(data, 'something');
+      test.equal(data, 'something', 'stream 3 received data');
     };
 
     radio.write('something');
@@ -86,15 +86,15 @@ NopStream.prototype.end = function () {
     radio.assimilate(stream3);
 
     stream1.write = function(data) {
-      test.equal(data, 'something');
+      test.equal(data, 'something', 'stream 1 received data');
     };
 
     stream2.write = function(data) {
-      test.equal(data, 'something');
+      test.equal(data, 'something', 'stream 2 received data');
     };
 
     radio.on('streamRemoved', function(stream) {
-      test.equal(stream, stream3);
+      test.equal(stream, stream3, 'correct stream was removed');
       stream3.write('something');
     });
 
@@ -112,11 +112,11 @@ NopStream.prototype.end = function () {
     radio.assimilate(stream2);
 
     stream1.end = function(data) {
-      test.ok(true);
+      test.ok(true, 'stream 1 was ended');
     };
 
     stream2.end = function(data) {
-      test.ok(true);
+      test.ok(true, 'stream 2 was ended');
     };
 
     radio.end();

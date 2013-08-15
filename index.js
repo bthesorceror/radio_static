@@ -65,7 +65,6 @@ RadioStatic.prototype._removeStream = function(key) {
     stream.removeListener('data', this._streams[key][0]);
     stream.removeListener('end', this._streams[key][1]);
     delete this._streams[key];
-    console.log(this._streams.length);
     this.emit('streamRemoved', stream);
   }
 }
