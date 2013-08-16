@@ -5,6 +5,17 @@ function RadioStatic() {
 
 (require('util')).inherits(RadioStatic, (require('events')).EventEmitter);
 
+function StreamHandler(stream, listeners) {
+  this.stream = stream;
+  this.listeners = listeners;
+}
+
+StreamHandler.prototype.remove = function() {
+  Object.keys(this.listeners).forEach(function(key) {
+    this.stream.removeListener(key, this.listeners[key]);
+  }.bind(this));
+}
+
 RadioStatic.prototype.write = function(data) {
   this._broadcast(data);
 }
@@ -34,11 +45,23 @@ RadioStatic.prototype.assimilate = function(stream) {
     if (data)
       this._broadcast(data, false, key);
     this._removeStream(key);
-  }.bind(this)
-
+  }.bind(this);
   stream.on('end', end);
 
-  this._addStream(key, stream, data, end);
+  var error = function(err) {
+    this.emit('error', err);
+    this._removeStream(key);
+  }.bind(this);
+
+  stream.on('error', error);
+
+  var handler = new StreamHandler(stream, {
+    end: end,
+    error: error,
+    data: data
+  });
+
+  this._addStream(key, handler);
 
   return key;
 }
@@ -48,24 +71,23 @@ RadioStatic.prototype._broadcast = function(data, end, from) {
     this.emit('data', data);
 
   Object.keys(this._streams).forEach(function(key) {
-    var stream = this._streams[key][2];
+    var stream = this._streams[key].stream;
     if (key != from) {
       end ? stream.end(data) : stream.write(data);
     }
   }.bind(this));
 }
 
-RadioStatic.prototype._addStream = function(key, stream, dataListener, endListener) {
-  this._streams[key] = [dataListener, endListener, stream];
+RadioStatic.prototype._addStream = function(key, handler) {
+  this._streams[key] = handler;
 }
 
 RadioStatic.prototype._removeStream = function(key) {
   if (this._streams[key]) {
-    var stream = this._streams[key][2];
-    stream.removeListener('data', this._streams[key][0]);
-    stream.removeListener('end', this._streams[key][1]);
+    var handler = this._streams[key];
+    handler.remove();
     delete this._streams[key];
-    this.emit('streamRemoved', stream);
+    this.emit('streamRemoved', handler.stream);
   }
 }
 

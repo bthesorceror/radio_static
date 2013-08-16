@@ -73,7 +73,7 @@ NopStream.prototype.end = function () {
     radio.write('something');
   });
 
-  tape("streams are removed on 'end' event", function(test) { 
+  tape("streams are removed on 'end' event", function(test) {
     test.plan(3);
 
     var radio   = new RadioStatic();
@@ -101,7 +101,7 @@ NopStream.prototype.end = function () {
     stream3.end('something');
   });
 
-  tape("ending radio ends streams", function(test) { 
+  tape("ending radio ends streams", function(test) {
     test.plan(2);
 
     var radio   = new RadioStatic();
@@ -118,6 +118,34 @@ NopStream.prototype.end = function () {
     stream2.end = function(data) {
       test.ok(true, 'stream 2 was ended');
     };
+
+    radio.end();
+  });
+
+  tape("errors are delegated, and stream removed", function(test) {
+    test.plan(1);
+
+    var radio   = new RadioStatic();
+    var stream1 = new NopStream();
+    var stream2 = new NopStream();
+
+    radio.assimilate(stream1);
+    radio.assimilate(stream2);
+
+    stream1.write = function(data) {
+      test.ok(true, 'stream 1 was ended');
+    };
+
+    radio.on('error', function(err) {
+      test.equal(err, 'everything fails', 'error was delegated');
+    });
+
+    stream2.on('error', function() {});
+
+    stream2.emit('error', 'everything fails');
+    stream2.emit('error', 'everything fails');
+
+    stream2.write('stream1');
 
     radio.end();
   });
