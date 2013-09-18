@@ -1,9 +1,12 @@
+var Readable = require('stream').Readable;
+
 function RadioStatic() {
+  Readable.apply(this);
   this._streams = {};
   this.key = 0;
 }
 
-(require('util')).inherits(RadioStatic, (require('events')).EventEmitter);
+(require('util')).inherits(RadioStatic, Readable);
 
 function StreamHandler(stream, listeners) {
   this.stream = stream;
@@ -67,8 +70,7 @@ RadioStatic.prototype.assimilate = function(stream) {
 }
 
 RadioStatic.prototype._broadcast = function(data, end, from) {
-  if (from)
-    this.emit('data', data);
+  from && this.push(data);
 
   Object.keys(this._streams).forEach(function(key) {
     var stream = this._streams[key].stream;
@@ -81,6 +83,8 @@ RadioStatic.prototype._broadcast = function(data, end, from) {
 RadioStatic.prototype._addStream = function(key, handler) {
   this._streams[key] = handler;
 }
+
+RadioStatic.prototype._read = function() { }
 
 RadioStatic.prototype._removeStream = function(key) {
   if (this._streams[key]) {
