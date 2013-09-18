@@ -1,6 +1,6 @@
 {
   "name": "radio_static",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "When one stream need to talk to many",
   "main": "index.js",
   "scripts": {
